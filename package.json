@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "ethers": "^5.7.2",
+    "merkletreejs": "^0.3.11"
+  }
+}

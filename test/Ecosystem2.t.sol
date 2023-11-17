@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {Test, console2} from "forge-std/Test.sol";
 import {MyCollection, PrimeTokenCounter} from "../src/Ecosystem2.sol";
 
-contract CounterTest is Test {
+contract Ecosystem2Test is Test {
     MyCollection public collection;
     PrimeTokenCounter public counter;
 
