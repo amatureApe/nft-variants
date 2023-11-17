@@ -14,7 +14,7 @@ contract Ecosystem1Test is Test {
     address charlie;
 
     // The addresses and merkle root
-    address[] eligibleAddresses = [
+    address[] merkleAddresses = [
         address(0x1111111111111111111111111111111111111111),
         address(0x2222222222222222222222222222222222222222),
         address(0x3333333333333333333333333333333333333333)
@@ -37,25 +37,47 @@ contract Ecosystem1Test is Test {
         bob = makeAddr("bob");
         charlie = makeAddr("charlie");
 
+        vm.startPrank(bob);
+
         myNFT = new MyNFT();
         myERC20Token = new MyERC20Token();
         stakingContract = new StakingContract(myNFT, myERC20Token);
+
+        myERC20Token.transfer(
+            address(stakingContract),
+            10000 * 10 ** myERC20Token.decimals()
+        );
+
+        myNFT.setMerkleRoot(merkleRoot);
+
+        vm.stopPrank();
     }
 
     function test_mint_with_valid_merkle_proof() public {
-        myNFT.setMerkleRoot(merkleRoot);
-
-        vm.prank(eligibleAddresses[0]); // Simulate transaction from the first eligible address
+        vm.prank(merkleAddresses[0]); // Simulate transaction from the first eligible address
         myNFT.mintNFT(exampleProof);
 
-        assertEq(myNFT.balanceOf(eligibleAddresses[0]), 1);
+        assertEq(myNFT.balanceOf(merkleAddresses[0]), 1);
     }
 
     function test_mint_with_invalid_merkle_proof() public {
-        myNFT.setMerkleRoot(merkleRoot);
-
         vm.expectRevert("Invalid proof");
         vm.prank(address(0x4444444444444444444444444444444444444444)); // An ineligible address
         myNFT.mintNFT(exampleProof); // Using the same proof for a different address
+    }
+
+    function test_stake_NFT() public {
+        vm.startPrank(merkleAddresses[0]);
+        myNFT.mintNFT(exampleProof);
+        uint256 tokenId = 1;
+        myNFT.approve(address(stakingContract), tokenId);
+        stakingContract.stake(tokenId);
+        vm.stopPrank();
+
+        assertEq(
+            stakingContract.stakers(tokenId),
+            merkleAddresses[0],
+            "Alice should be the staker"
+        );
     }
 }

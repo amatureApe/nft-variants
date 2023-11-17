@@ -6,11 +6,15 @@ import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 
 contract MyNFT is ERC721, Ownable2Step {
+    using BitMaps for BitMaps.BitMap;
+
     uint256 public constant MAX_SUPPLY = 1000;
     uint256 public totalSupply;
     bytes32 public merkleRoot; // Merkle root for the discount eligibility
+    BitMaps.BitMap private minted; // Bitmap to track if an address has minted
 
     // Royalty info
     address payable public royaltyRecipient;
@@ -23,15 +27,23 @@ contract MyNFT is ERC721, Ownable2Step {
     function mintNFT(bytes32[] calldata _merkleProof) external {
         require(totalSupply < MAX_SUPPLY, "Max supply reached");
 
-        // Check for discount eligibility
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
         require(
             MerkleProof.verify(_merkleProof, merkleRoot, leaf),
             "Invalid proof"
         );
 
+        // Check if the address has already minted using the bitmap
+        require(
+            !minted.get(uint256(uint160(msg.sender))),
+            "Address has already minted"
+        );
+
         _mint(msg.sender, totalSupply + 1);
         totalSupply++;
+
+        // Set the bitmap for the address to indicate minting
+        minted.set(uint256(uint160(msg.sender)));
     }
 
     // Royalty function
