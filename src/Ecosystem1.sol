@@ -103,11 +103,11 @@ contract StakingContract is IERC721Receiver {
             "Cannot withdraw yet"
         );
 
-        nft.safeTransferFrom(address(this), msg.sender, tokenId);
-        erc20.transfer(msg.sender, 10 * (10 ** uint256(erc20.decimals())));
-
         stakingTimestamps[tokenId] = 0;
         stakers[tokenId] = address(0);
+
+        nft.safeTransferFrom(address(this), msg.sender, tokenId);
+        erc20.transfer(msg.sender, 10 * (10 ** uint256(erc20.decimals())));
     }
 
     function onERC721Received(
