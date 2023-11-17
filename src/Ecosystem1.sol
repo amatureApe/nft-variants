@@ -20,6 +20,12 @@ contract MyNFT is ERC721, Ownable2Step {
     address payable public royaltyRecipient;
     uint256 public constant royaltyPercentage = 250; // 2.5%
 
+    error InvalidMerkleProof(
+        bytes32[] merkleProof,
+        bytes32 merkleRoot,
+        bytes32 leaft
+    );
+
     constructor() ERC721("MyNFT", "MNFT") Ownable(msg.sender) {
         totalSupply = 0;
     }
@@ -27,7 +33,7 @@ contract MyNFT is ERC721, Ownable2Step {
     function mintNFT(bytes32[] calldata _merkleProof) external {
         require(totalSupply < MAX_SUPPLY, "Max supply reached");
 
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        bytes32 leaf = keccak256(abi.encode(msg.sender));
         require(
             MerkleProof.verify(_merkleProof, merkleRoot, leaf),
             "Invalid proof"

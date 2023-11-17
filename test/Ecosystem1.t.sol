@@ -69,15 +69,15 @@ contract Ecosystem1Test is Test {
     function test_stake_NFT() public {
         vm.startPrank(merkleAddresses[0]);
         myNFT.mintNFT(exampleProof);
+
         uint256 tokenId = 1;
         myNFT.approve(address(stakingContract), tokenId);
-        stakingContract.stake(tokenId);
-        vm.stopPrank();
 
-        assertEq(
-            stakingContract.stakers(tokenId),
-            merkleAddresses[0],
-            "Alice should be the staker"
-        );
+        stakingContract.stake(tokenId);
+        assertEq(stakingContract.stakers(tokenId), merkleAddresses[0]);
+
+        vm.warp(2 days);
+        stakingContract.withdraw(tokenId);
+        assertGt(myERC20Token.balanceOf(merkleAddresses[0]), 0);
     }
 }

@@ -13,27 +13,32 @@ function generateMerkleTree(addresses) {
 
 function generateMerkleProof(merkleTree, address) {
     const leaf = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["address"], [address]));
-    return merkleTree.getHexProof(leaf);
+    return {
+        proof: merkleTree.getHexProof(leaf),
+        leaf
+    };
 }
 
-const eligibleAddresses = [
+const merkleAddresses = [
     '0x1111111111111111111111111111111111111111',
     '0x2222222222222222222222222222222222222222',
     '0x3333333333333333333333333333333333333333',
 ];
 
 // Generate Merkle Tree
-const merkleTree = generateMerkleTree(eligibleAddresses);
+const merkleTree = generateMerkleTree(merkleAddresses);
 
 // Get Merkle Root
 const merkleRoot = merkleTree.getHexRoot();
 console.log('Merkle Root:', merkleRoot);
 
-// Generate and Display Merkle Proofs for Each Address
-eligibleAddresses.forEach(address => {
-    const proof = generateMerkleProof(merkleTree, address);
+// Generate and Display Merkle Proofs and Leaves for Each Address
+merkleAddresses.forEach(address => {
+    const { proof, leaf } = generateMerkleProof(merkleTree, address);
     console.log(`Merkle Proof for ${address}:`, proof);
+    console.log(`Merkle Leaf for ${address}:`, leaf);
 });
+
 
 
 ////////////////////// Generated proofs ////////////////////////////////
